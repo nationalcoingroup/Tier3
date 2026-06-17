@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: goomba-append
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: WHITEPAGES_API_KEY
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
