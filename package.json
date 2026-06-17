@@ -1,0 +1,11 @@
+{
+  "name": "goomba-append",
+  "version": "2.0.0",
+  "description": "GOOMBA Append - live person and next-of-kin lookup backed by the Whitepages Premium API",
+  "type": "commonjs",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

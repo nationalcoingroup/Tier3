@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GOOMBA Append</title>
+<style>
+  :root {
+    --bg: #161009; --bg2: #1f160d; --panel: #2a1d10; --line: #4a3318;
+    --gold: #f0a82e; --gold-soft: #d8902a; --tan: #c98a3b; --cream: #f6ecd9;
+    --muted: #b39873; --red: #d4452f; --ok: #7fd07f; --bad: #ff7a6b; --warn: #f0c14b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--cream); min-height: 100vh;
+    background: radial-gradient(1200px 520px at 50% -140px, #3a2812 0%, var(--bg) 60%);
+  }
+  header {
+    display: flex; align-items: center; gap: 14px; padding: 16px 22px;
+    background: linear-gradient(180deg, #3a2812, #241910); border-bottom: 4px solid var(--gold);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.45);
+  }
+  header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 2px; color: var(--gold); text-shadow: 2px 2px 0 #1a1209; }
+  header .sub { font-size: 10px; letter-spacing: 3px; color: var(--tan); font-weight: 700; }
+  main { max-width: 760px; margin: 0 auto; padding: 26px 22px 88px; }
+  .hero { text-align: center; margin: 10px 0 22px; }
+  .hero h2 { font-size: 30px; font-weight: 900; letter-spacing: 1px; margin: 0; color: var(--cream); text-shadow: 2px 2px 0 #1a1209; }
+  .hero p { color: var(--muted); font-size: 13px; margin: 8px 0 0; letter-spacing: 1px; }
+  .card { background: linear-gradient(180deg, var(--panel), var(--bg2)); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+  label { display: block; font-size: 11px; font-weight: 800; margin-bottom: 5px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  input[type="text"], input[type="tel"] {
+    width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px;
+    font-size: 15px; background: #140d07; color: var(--cream);
+  }
+  input::placeholder { color: #6f5a3c; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .grid3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 13px; }
+  @media (max-width: 560px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+  .field { margin-bottom: 13px; }
+  .opts { display: flex; gap: 18px; flex-wrap: wrap; margin: 4px 0 16px; }
+  .check { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--cream); }
+  .check input { width: auto; }
+  button {
+    width: 100%; background: var(--gold); color: #241910; border: none; border-radius: 10px;
+    padding: 15px; font-size: 16px; font-weight: 900; cursor: pointer; letter-spacing: 1px; text-transform: uppercase;
+  }
+  button:hover { background: var(--gold-soft); }
+  button:disabled { background: #5a4a33; color: #2a1d10; cursor: not-allowed; }
+  button.ghost { width: auto; background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 7px 14px; font-size: 12px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .pill { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+  .pill.ok { background: rgba(127,208,127,0.15); color: var(--ok); border: 1px solid rgba(127,208,127,0.4); }
+  .pill.bad { background: rgba(255,122,107,0.12); color: var(--bad); border: 1px solid rgba(255,122,107,0.4); }
+  .pill.warn { background: rgba(240,193,75,0.12); color: var(--warn); border: 1px solid rgba(240,193,75,0.4); }
+  .pill.score { background: rgba(240,168,46,0.15); color: var(--gold); border: 1px solid rgba(240,168,46,0.4); }
+  .pill.dead { background: rgba(212,69,47,0.18); color: var(--bad); border: 1px solid rgba(212,69,47,0.5); }
+  .result-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .result-head .nm { font-size: 20px; font-weight: 900; color: var(--cream); }
+  .readout { display: grid; grid-template-columns: 130px 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .readout .k { background: #1c130a; padding: 11px 13px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--tan); display: flex; align-items: center; }
+  .readout .v { background: #241910; padding: 11px 13px; font-size: 15px; color: var(--cream); display: flex; align-items: center; word-break: break-word; }
+  .readout a { color: var(--gold); text-decoration: none; font-weight: 700; }
+  .readout a:hover { text-decoration: underline; }
+  .readout .empty { color: #6f5a3c; }
+  .typetag { font-size: 11px; color: var(--muted); margin-left: 8px; }
+  .section-label { font-size: 12px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin: 22px 0 12px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .relcard { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; background: rgba(201,138,59,0.05); }
+  .relcard .reltop { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .relcard .relnm { font-size: 16px; font-weight: 800; }
+  .store { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: rgba(240,168,46,0.05); }
+  .store .pin { font-size: 20px; }
+  .store .meta { flex: 1; }
+  .store .meta .snm { font-weight: 800; color: var(--cream); }
+  .store .meta .saddr { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .store .dist { font-weight: 900; color: var(--gold); white-space: nowrap; }
+  .store .go { margin-top: 4px; }
+  .store a { color: var(--gold); text-decoration: none; font-weight: 700; font-size: 13px; }
+  .store a:hover { text-decoration: underline; }
+  .openpill { font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 999px; margin-left: 6px; }
+  .openpill.yes { background: rgba(127,208,127,0.15); color: var(--ok); }
+  .openpill.no { background: rgba(255,122,107,0.12); color: var(--bad); }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .statusmsg { text-align: center; padding: 26px; font-size: 15px; color: var(--muted); }
+
+  /* little evil goombas marching across the bottom */
+  .goomba-field { position: fixed; left: 0; right: 0; bottom: 0; height: 64px; pointer-events: none; overflow: hidden; z-index: 4; }
+  .walker { position: absolute; bottom: 4px; will-change: transform; }
+  .walker .body { display: inline-block; transform-origin: 50% 92%; animation: waddle 0.38s ease-in-out infinite; }
+  .w1 { animation: marchR 15s linear infinite; }
+  .w2 { animation: marchL 19s linear infinite; animation-delay: -5s; }
+  .w3 { animation: marchR 11s linear infinite; animation-delay: -8s; }
+  .w4 { animation: marchL 24s linear infinite; animation-delay: -14s; }
+  .w3 .body { animation-duration: 0.3s; }
+  .w4 .body { animation-duration: 0.46s; }
+  @keyframes marchR { from { transform: translateX(-90px); } to { transform: translateX(calc(100vw + 90px)); } }
+  @keyframes marchL { from { transform: translateX(calc(100vw + 90px)) scaleX(-1); } to { transform: translateX(-90px) scaleX(-1); } }
+  @keyframes waddle { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-3px) rotate(6deg); } }
+</style>
+</head>
+<body>
+<header>
+  <svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true">
+    <ellipse cx="32" cy="54" rx="20" ry="7" fill="#1a1209"/>
+    <path d="M14 30c0-13 8-22 18-22s18 9 18 22c0 9-8 14-18 14s-18-5-18-14z" fill="#8a5a2b"/>
+    <path d="M16 31c0-11 7-19 16-19s16 8 16 19" fill="#a06a32"/>
+    <ellipse cx="24" cy="34" rx="6" ry="7" fill="#fff"/><ellipse cx="40" cy="34" rx="6" ry="7" fill="#fff"/>
+    <circle cx="25" cy="36" r="2.6" fill="#1a1209"/><circle cx="39" cy="36" r="2.6" fill="#1a1209"/>
+    <path d="M17 27l11 4M47 27l-11 4" stroke="#1a1209" stroke-width="3" stroke-linecap="round"/>
+    <path d="M22 46h20l-3 5H25z" fill="#f6ecd9"/>
+  </svg>
+  <div>
+    <h1>GOOMBA APPEND</h1>
+    <div class="sub">FIND THE FAMILY</div>
+  </div>
+  <div style="margin-left:auto" class="row"><span id="keyStatus" class="pill warn">checking</span><span id="mapsStatus" class="pill warn">maps</span></div>
+</header>
+<main>
+
+  <div class="hero">
+    <h2>WHO ARE YOU LOOKING FOR</h2>
+    <p>Give the most info you have. More fields means a cleaner match.</p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>Full name</label>
+      <input id="name" type="text" placeholder="William Perkins" autocomplete="off" />
+    </div>
+    <div class="grid3">
+      <div class="field">
+        <label>Street</label>
+        <input id="street" type="text" placeholder="123 Desert Rd" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>City</label>
+        <input id="city" type="text" placeholder="Paradise Valley" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>State</label>
+        <input id="state_code" type="text" placeholder="AZ" maxlength="2" autocomplete="off" />
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>ZIP</label>
+        <input id="zipcode" type="text" placeholder="85253" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input id="phone" type="tel" placeholder="Any number you have" autocomplete="off" />
+      </div>
+    </div>
+    <div class="opts">
+      <label class="check"><input id="historical" type="checkbox" /> Historical addresses</label>
+      <label class="check"><input id="fuzzy" type="checkbox" /> Fuzzy name match</label>
+      <label class="check"><input id="trace" type="checkbox" checked /> Trace relatives</label>
+      <label class="check"><input id="walgreens" type="checkbox" checked /> Nearest Walgreens</label>
+    </div>
+    <button id="searchBtn" type="button">Search</button>
+  </div>
+
+  <div id="results"></div>
+
+</main>
+
+<script>
+function fmtPhone(n) {
+  const d = String(n || "").replace(/\D/g, "");
+  if (d.length === 11 && d[0] === "1") return "(" + d.slice(1,4) + ") " + d.slice(4,7) + "-" + d.slice(7);
+  if (d.length === 10) return "(" + d.slice(0,3) + ") " + d.slice(3,6) + "-" + d.slice(6);
+  return n || "";
+}
+function telLink(n) {
+  const d = String(n || "").replace(/\D/g, "");
+  return d ? '<a href="tel:' + d + '">' + fmtPhone(n) + "</a>" : '<span class="empty">none</span>';
+}
+function mailLink(e) {
+  return e ? '<a href="mailto:' + e + '">' + e + "</a>" : '<span class="empty">none</span>';
+}
+function phoneCell(p) {
+  if (!p || !p.number) return '<span class="empty">none</span>';
+  const t = p.type ? '<span class="typetag">' + p.type + (p.score != null ? " &middot; " + p.score : "") + "</span>" : "";
+  return telLink(p.number) + t;
+}
+function addrCell(a) { return a ? a : '<span class="empty">none</span>'; }
+
+function readout(v) {
+  return '<div class="readout">'
+    + '<div class="k">Best phone</div><div class="v">' + phoneCell(v.best_phone) + "</div>"
+    + '<div class="k">Alt phone</div><div class="v">' + phoneCell(v.alt_phone) + "</div>"
+    + '<div class="k">Best address</div><div class="v">' + addrCell(v.best_address) + "</div>"
+    + '<div class="k">Email</div><div class="v">' + mailLink(v.email) + "</div>"
+    + "</div>";
+}
+
+async function checkHealth() {
+  const el = document.getElementById("keyStatus");
+  const mp = document.getElementById("mapsStatus");
+  try {
+    const r = await fetch("/api/health").then((x) => x.json());
+    if (r.keyConfigured) { el.className = "pill ok"; el.textContent = "key ok"; }
+    else { el.className = "pill bad"; el.textContent = "no key"; }
+    if (r.mapsConfigured) { mp.className = "pill ok"; mp.textContent = "maps ok"; }
+    else { mp.className = "pill bad"; mp.textContent = "no maps"; }
+  } catch (e) {
+    el.className = "pill bad"; el.textContent = "down";
+    mp.className = "pill bad"; mp.textContent = "down";
+  }
+}
+
+const WALGREENS_MSG = {
+  no_address: "No home address on the match, so no store search was run.",
+  maps_not_configured: "Google Maps key is not set on the server.",
+  maps_key_denied: "Google rejected the Maps key. Check that Geocoding and Places are enabled on it.",
+  geocode_failed: "Could not locate the home address on the map.",
+  none_found: "No Walgreens found near the home address.",
+  error: "The store lookup hit an error.",
+};
+
+const STATUS_MSG = {
+  no_input: "Enter at least one field to search.",
+  no_match: "No record matched. Try adding or loosening a field, or switch on fuzzy match.",
+  invalid_key: "The Whitepages key was rejected. Check the key set on the server.",
+  bad_request: "The search was rejected as malformed. Check the fields.",
+  rate_limited: "Rate limited by Whitepages. Wait a moment and try again.",
+  server_error: "Whitepages had a server error. Try again shortly.",
+  network_error: "Could not reach Whitepages. Try again.",
+  error: "Something went wrong with the lookup.",
+};
+
+document.getElementById("searchBtn").onclick = run;
+["name","street","city","state_code","zipcode","phone"].forEach((id) => {
+  document.getElementById(id).addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+});
+
+async function run() {
+  const body = {
+    name: document.getElementById("name").value.trim(),
+    street: document.getElementById("street").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    state_code: document.getElementById("state_code").value.trim(),
+    zipcode: document.getElementById("zipcode").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    include_historical: document.getElementById("historical").checked,
+    include_fuzzy: document.getElementById("fuzzy").checked,
+    trace_relatives: document.getElementById("trace").checked,
+    find_walgreens: document.getElementById("walgreens").checked,
+    max_relatives: 4,
+  };
+  const results = document.getElementById("results");
+  const btn = document.getElementById("searchBtn");
+  btn.disabled = true; btn.textContent = "Searching...";
+  results.innerHTML = '<div class="card"><div class="statusmsg"><span class="spinner"></span> &nbsp; Running the search and tracing relatives...</div></div>';
+
+  try {
+    const r = await fetch("/api/search", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    }).then((x) => x.json());
+
+    if (r.error) { results.innerHTML = '<div class="card"><div class="statusmsg">' + r.error + "</div></div>"; return; }
+    if (r.status !== "matched") {
+      results.innerHTML = '<div class="card"><div class="statusmsg">' + (STATUS_MSG[r.status] || "No result.") + "</div></div>";
+      return;
+    }
+
+    const p = r.person;
+    let html = '<div class="card">';
+    html += '<div class="result-head"><span class="nm">' + (p.name || "Unknown") + "</span>";
+    if (p.score != null) html += '<span class="pill score">match ' + p.score + "</span>";
+    if (p.is_dead) html += '<span class="pill dead">deceased</span>';
+    if (p.dob) html += '<span class="muted">DOB ' + p.dob + "</span>";
+    html += "</div>";
+    html += readout(p);
+
+    const wg = r.walgreens;
+    if (wg) {
+      html += '<div class="section-label">Nearest Walgreens &middot; FedEx OnSite</div>';
+      if (wg.status === "ok" && wg.stores && wg.stores.length) {
+        for (const s of wg.stores) {
+          let open = "";
+          if (s.open_now === true) open = '<span class="openpill yes">open now</span>';
+          else if (s.open_now === false) open = '<span class="openpill no">closed</span>';
+          html += '<div class="store"><div class="pin">&#128205;</div><div class="meta">'
+            + '<div class="snm">' + s.name + open + "</div>"
+            + '<div class="saddr">' + (s.address || "") + "</div>"
+            + '<div class="go"><a href="' + s.directions_url + '" target="_blank" rel="noopener">Directions &#8594;</a></div>'
+            + "</div>"
+            + '<div class="dist">' + (s.distance_mi != null ? s.distance_mi + " mi" : "") + "</div></div>";
+        }
+        html += '<div class="muted" style="margin-top:4px">Confirm FedEx OnSite is active at the store before sending. Not every Walgreens carries it.</div>';
+      } else {
+        html += '<div class="muted">' + (WALGREENS_MSG[wg.status] || "No Walgreens found near the home address.") + "</div>";
+      }
+    }
+
+    const rels = r.relatives || [];
+    if (rels.length) {
+      html += '<div class="section-label">Relatives / Next of kin</div>';
+      for (const rel of rels) {
+        html += '<div class="relcard"><div class="reltop"><span class="relnm">' + (rel.name || "Unknown") + "</span>";
+        if (rel.found && rel.score != null) html += '<span class="pill score">match ' + rel.score + "</span>";
+        if (rel.found && rel.is_dead) html += '<span class="pill dead">deceased</span>';
+        if (!rel.found) html += '<span class="pill warn">no contact match</span>';
+        html += "</div>";
+        if (rel.found) html += readout(rel);
+        html += "</div>";
+      }
+    }
+    html += "</div>";
+    results.innerHTML = html;
+  } catch (e) {
+    results.innerHTML = '<div class="card"><div class="statusmsg">Request failed. Try again.</div></div>';
+  } finally {
+    btn.disabled = false; btn.textContent = "Search";
+  }
+}
+
+checkHealth();
+</script>
+<div class="goomba-field" aria-hidden="true">
+  <div class="walker w1"><span class="body">
+    <svg width="42" height="42" viewBox="0 0 64 64">
+      <ellipse cx="32" cy="58" rx="17" ry="4" fill="rgba(0,0,0,0.35)"/>
+      <path d="M14 30c0-13 8-22 18-22s18 9 18 22c0 9-8 14-18 14s-18-5-18-14z" fill="#8a5a2b"/>
+      <path d="M16 31c0-11 7-19 16-19s16 8 16 19" fill="#a06a32"/>
+      <ellipse cx="24" cy="34" rx="6" ry="7" fill="#fff"/><ellipse cx="40" cy="34" rx="6" ry="7" fill="#fff"/>
+      <circle cx="26" cy="36" r="2.8" fill="#d4452f"/><circle cx="38" cy="36" r="2.8" fill="#d4452f"/>
+      <path d="M17 26l12 5M47 26l-12 5" stroke="#1a1209" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M24 45h16l-2.5 4.5H26.5z" fill="#f6ecd9"/>
+      <path d="M28 45v4.5M34 45v4.5" stroke="#8a5a2b" stroke-width="1.4"/>
+      <ellipse cx="24" cy="55" rx="6" ry="3" fill="#5a3a18"/><ellipse cx="40" cy="55" rx="6" ry="3" fill="#5a3a18"/>
+    </svg>
+  </span></div>
+  <div class="walker w2"><span class="body">
+    <svg width="34" height="34" viewBox="0 0 64 64">
+      <ellipse cx="32" cy="58" rx="17" ry="4" fill="rgba(0,0,0,0.35)"/>
+      <path d="M14 30c0-13 8-22 18-22s18 9 18 22c0 9-8 14-18 14s-18-5-18-14z" fill="#7a4f26"/>
+      <path d="M16 31c0-11 7-19 16-19s16 8 16 19" fill="#925f2d"/>
+      <ellipse cx="24" cy="34" rx="6" ry="7" fill="#fff"/><ellipse cx="40" cy="34" rx="6" ry="7" fill="#fff"/>
+      <circle cx="26" cy="36" r="2.8" fill="#ff5a3c"/><circle cx="38" cy="36" r="2.8" fill="#ff5a3c"/>
+      <path d="M17 26l12 5M47 26l-12 5" stroke="#1a1209" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M24 45h16l-2.5 4.5H26.5z" fill="#f6ecd9"/>
+      <path d="M28 45v4.5M34 45v4.5" stroke="#7a4f26" stroke-width="1.4"/>
+      <ellipse cx="24" cy="55" rx="6" ry="3" fill="#4f3215"/><ellipse cx="40" cy="55" rx="6" ry="3" fill="#4f3215"/>
+    </svg>
+  </span></div>
+  <div class="walker w3"><span class="body">
+    <svg width="46" height="46" viewBox="0 0 64 64">
+      <ellipse cx="32" cy="58" rx="17" ry="4" fill="rgba(0,0,0,0.35)"/>
+      <path d="M14 30c0-13 8-22 18-22s18 9 18 22c0 9-8 14-18 14s-18-5-18-14z" fill="#8a5a2b"/>
+      <path d="M16 31c0-11 7-19 16-19s16 8 16 19" fill="#a06a32"/>
+      <ellipse cx="24" cy="34" rx="6.5" ry="7.5" fill="#fff"/><ellipse cx="40" cy="34" rx="6.5" ry="7.5" fill="#fff"/>
+      <circle cx="26" cy="36" r="3" fill="#d4452f"/><circle cx="38" cy="36" r="3" fill="#d4452f"/>
+      <path d="M16 25l13 6M48 25l-13 6" stroke="#1a1209" stroke-width="4" stroke-linecap="round"/>
+      <path d="M23 45h18l-3 5H26z" fill="#f6ecd9"/>
+      <path d="M28 45v5M34 45v5" stroke="#8a5a2b" stroke-width="1.5"/>
+      <ellipse cx="24" cy="55" rx="6" ry="3" fill="#5a3a18"/><ellipse cx="40" cy="55" rx="6" ry="3" fill="#5a3a18"/>
+    </svg>
+  </span></div>
+  <div class="walker w4"><span class="body">
+    <svg width="30" height="30" viewBox="0 0 64 64">
+      <ellipse cx="32" cy="58" rx="17" ry="4" fill="rgba(0,0,0,0.35)"/>
+      <path d="M14 30c0-13 8-22 18-22s18 9 18 22c0 9-8 14-18 14s-18-5-18-14z" fill="#6f4722"/>
+      <path d="M16 31c0-11 7-19 16-19s16 8 16 19" fill="#875829"/>
+      <ellipse cx="24" cy="34" rx="6" ry="7" fill="#fff"/><ellipse cx="40" cy="34" rx="6" ry="7" fill="#fff"/>
+      <circle cx="26" cy="36" r="2.8" fill="#ff5a3c"/><circle cx="38" cy="36" r="2.8" fill="#ff5a3c"/>
+      <path d="M17 26l12 5M47 26l-12 5" stroke="#1a1209" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M24 45h16l-2.5 4.5H26.5z" fill="#f6ecd9"/>
+      <path d="M28 45v4.5M34 45v4.5" stroke="#6f4722" stroke-width="1.4"/>
+      <ellipse cx="24" cy="55" rx="6" ry="3" fill="#46300f"/><ellipse cx="40" cy="55" rx="6" ry="3" fill="#46300f"/>
+    </svg>
+  </span></div>
+</div>
+</body>
+</html>
